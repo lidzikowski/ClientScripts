@@ -26,7 +26,7 @@ public class LocalPlayer : Parent
     #endregion
 
     #region Constructors
-    public LocalPlayer(TempLocalPlayer player) : base(player)
+    public LocalPlayer(TempLocalPlayer player, ClientSocket _socket) : base(player, _socket)
     {
         user_id = player.user_id;
         username = player.username;
@@ -62,18 +62,17 @@ public class LocalPlayer : Parent
         {
             float x = (Input.mousePosition.x - Screen.width / 2) / 20;
             float y = (Input.mousePosition.y - Screen.height / 2) / 20;
-            ChangePosition(position.x + x, position.y + y, socket);
+            ChangePosition(position.x + x, position.y + y);
         }
     }
     #endregion
 
     #region Override ChangePosition (send new position to server)
-    public override void ChangePosition(float x, float y, ClientSocket socket)
+    public override void ChangePosition(float x, float y)
     {
         x = (float)Math.Round(x, 2);
         y = (float)Math.Round(y, 2);
         new_position = new Vector3(x, y, 0);
-        atan2 = Mathf.Atan2(y - object_model.transform.position.y, x - object_model.transform.position.x) * Mathf.Rad2Deg + 90;
 
         string json = "{\"method\":\"changePosition\", \"user_id\":\"" + user_id + "\", \"x\":" + x + ",\"y\":" + y + "}";
         socket.io.Emit("communication", json);

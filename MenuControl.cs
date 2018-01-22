@@ -37,7 +37,7 @@ public class MenuControl : MonoBehaviour {
             foreach (EnemieShip ship in serverData.enemieShips)
                 socket.gameData.enemieShips.Add(ship.ship_name, ship);
 
-            socket.localPlayer = new LocalPlayer(serverData.playerData);
+            socket.localPlayer = new LocalPlayer(serverData.playerData, socket);
             if(socket.localPlayer != null)
                 socket.changeScene("game");
         });

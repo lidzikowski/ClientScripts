@@ -2,12 +2,14 @@
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnitySocketIO.Events;
+using LitJson;
 
 public class LocalPlayerScript : MonoBehaviour {
 
     private ClientSocket socket;
 
     private Transform LocalPlayer_BackgroundMap;
+    private Transform LocalPlayer_OtherPlayers;
 
     private float time = 1;
     private Text Interface_Minimap_Position;
@@ -22,8 +24,15 @@ public class LocalPlayerScript : MonoBehaviour {
         
         CreateWorld();
 
-        socket.io.On("communication", (SocketIOEvent e) => {
+        socket.io.On("synchronizeData", (SocketIOEvent e) => {
+            JsonData jsonData = JsonMapper.ToObject<JsonData>(e.data);
 
+            // Local player update
+            socket.localPlayer.synchronize(jsonData.localPlayer);
+
+            // Other player update
+            LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().arrayPlayers(jsonData.otherPlayers);
+            
         });
     }
 
@@ -34,7 +43,7 @@ public class LocalPlayerScript : MonoBehaviour {
             UpdateInterface();
             time = 0;
         }
-        else if (time > 0.15)
+        else if (time > 0.2)
         {
             if (Input.GetMouseButton(0) && !EventSystem.current.IsPointerOverGameObject())
                 socket.localPlayer.ClickMouseController(socket);
@@ -51,12 +60,15 @@ public class LocalPlayerScript : MonoBehaviour {
     {
         // Change local player ship
         socket.localPlayer.object_model = gameObject;
-        socket.localPlayer.ChangeShip(socket);
+        socket.localPlayer.ChangeShip();
 
         // Change background
         LocalPlayer_BackgroundMap = GameObject.Find("Background").transform;
         ChangeMap();
-        
+
+        // Other player start object
+        LocalPlayer_OtherPlayers = GameObject.Find("OtherPlayers").transform;
+
         // Interface local player
         Transform userInterface = GameObject.Find("Interface").transform;
         foreach (Transform transform in userInterface)
