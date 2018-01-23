@@ -67,8 +67,11 @@ public class LocalPlayer : Parent
     }
     #endregion
 
-    #region Override ChangePosition (send new position to server)
-    public override void ChangePosition(float x, float y)
+    #region ChangePosition (send new position to server)
+    /// <summary>
+    /// Set new_position in object and calculate atan to rotate model
+    /// </summary>
+    public void ChangePosition(float x, float y)
     {
         x = (float)Math.Round(x, 2);
         y = (float)Math.Round(y, 2);

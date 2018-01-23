@@ -13,7 +13,7 @@ public class Player : Parent
         user_id = player.user_id;
         username = player.username;
     }
-    public Player(JsonPlayer js, ClientSocket _socket, GameObject playerPrefab, Transform playersTransform)
+    public Player(JsonPlayer js, ClientSocket _socket, GameObject prefab, Transform transform)
     {
         user_id = js.user_id;
         username = js.username;
@@ -33,17 +33,20 @@ public class Player : Parent
         position = new Vector3((float)js.position_x, (float)js.position_y, 0);
         new_position = new Vector3((float)js.new_position_x, (float)js.new_position_y, 0);
 
-        createGameObject(playerPrefab, playersTransform);
+        createGameObject("PLAYER", user_id, prefab, transform);
 
         object_target = null;
         attack = false;
     }
     #endregion
 
-    private void createGameObject(GameObject playerPrefab, Transform playersTransform)
+    /// <summary>
+    /// Set new_position in object and calculate atan to rotate model
+    /// </summary>
+    public virtual void ChangePosition(float x, float y)
     {
-        object_model = GameObject.Instantiate(playerPrefab, playersTransform);
-        object_model.name = "PLAYER " + user_id;
-        ChangeShip();
+        x = (float)System.Math.Round(x, 2);
+        y = (float)System.Math.Round(y, 2);
+        new_position = new Vector3(x, y, 0);
     }
 }

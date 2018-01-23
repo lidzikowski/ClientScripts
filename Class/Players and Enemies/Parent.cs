@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Parent : IFly, IHealth, ITarget
 {
     public ClientSocket socket { get; set; }
-    public float lastUpdate = 2;
+    public float lastUpdate = 5;
 
     #region Ship
     public string ship_name { get; set; }
@@ -36,9 +35,7 @@ public abstract class Parent : IFly, IHealth, ITarget
     public bool attack { get; set; }
     protected List<Transform> ship_lasers { get; set; }
     #endregion
-
-
-
+    
     #region Constructors
     public Parent(Temp player, ClientSocket _socket)
     {
@@ -109,23 +106,13 @@ public abstract class Parent : IFly, IHealth, ITarget
 
     #region IFly methods
     /// <summary>
-    /// Set new_position in object and calculate atan to rotate model
-    /// </summary>
-    public virtual void ChangePosition(float x, float y)
-    {
-        x = (float)System.Math.Round(x, 2);
-        y = (float)System.Math.Round(y, 2);
-        new_position = new Vector3(x, y, 0);
-    }
-
-    /// <summary>
     /// Move GameObject and enable or disable engines if object moveing
     /// </summary>
     public virtual void FlyShip()
     {
         if (position != new_position)
         {
-            object_model.transform.position = Vector3.MoveTowards(object_model.transform.position, new_position, Time.deltaTime * (speed / 15));
+            object_model.transform.position = Vector2.MoveTowards(object_model.transform.position, new_position, Time.deltaTime * (speed / 15));
             position = object_model.transform.position;
 
             if (!gearsUse && !gearsActive)
@@ -136,18 +123,21 @@ public abstract class Parent : IFly, IHealth, ITarget
             if (gearsUse || gearsActive)
             {
                 gearsUse = false;
-                gearsActive = false;
-                foreach (GameObject engine in ship_engines)
-                    engine.SetActive(false);
+                changeEngine(false);
             }
         }
 
         if (gearsUse && !gearsActive)
-        {
-            gearsActive = true;
-            foreach (GameObject engine in ship_engines)
-                engine.SetActive(true);
-        }
+            changeEngine(true);
+
+        RotateShip();
+    }
+
+    private void changeEngine(bool status)
+    {
+        gearsActive = status;
+        foreach (GameObject engine in ship_engines)
+            engine.SetActive(status);
     }
 
     /// <summary>
@@ -158,18 +148,18 @@ public abstract class Parent : IFly, IHealth, ITarget
         if (position == new_position)
             return;
 
-        if (attack && object_target != null)
-            atan2 = Mathf.Atan2(object_target.object_model.transform.position.y - position.y, object_target.object_model.transform.position.x - position.x) * Mathf.Rad2Deg + 90;
-        else
+        //if (attack && object_target != null)
+        //    atan2 = Mathf.Atan2(object_target.object_model.transform.position.y - position.y, object_target.object_model.transform.position.x - position.x) * Mathf.Rad2Deg + 90;
+        //else
             atan2 = Mathf.Atan2(new_position.y - position.y, new_position.x - position.x) * Mathf.Rad2Deg + 90;
 
-        object_ship_model.transform.rotation = Quaternion.Lerp(object_ship_model.transform.rotation, Quaternion.Euler(0, 0, atan2), Time.deltaTime * 8);
+        object_ship_model.transform.rotation = Quaternion.Lerp(object_ship_model.transform.rotation, Quaternion.Euler(0, 0, atan2), Time.deltaTime * 10);
     }
     
     protected void setPosition(Vector3 pos)
     {
-        position = pos;
         object_model.transform.position = Vector3.MoveTowards(object_model.transform.position, pos, Time.deltaTime * (speed / 10));
+        position = object_model.transform.position;
     }
     #endregion
 
@@ -178,7 +168,7 @@ public abstract class Parent : IFly, IHealth, ITarget
     /// </summary>
     public virtual void synchronize(Json pl)
     {
-        lastUpdate = 2;
+        lastUpdate = 5;
 
         if (ship_name != pl.ship_name)
         {
@@ -192,13 +182,17 @@ public abstract class Parent : IFly, IHealth, ITarget
         shields_max = pl.shields_max;
 
         Vector3 pos = new Vector3((float)pl.position_x, (float)pl.position_y, 0);
-        if (Vector3.Distance(position, pos) > 1)
+        if (Vector3.Distance(position, pos) > speed / 50)
             setPosition(pos);
         new_position = new Vector3((float)pl.new_position_x, (float)pl.new_position_y, 0);
 
         speed = pl.speed;
+    }
 
-        // Target
-
+    protected void createGameObject(string type, int id, GameObject prefab, Transform transform)
+    {
+        object_model = GameObject.Instantiate(prefab, transform);
+        object_model.name = type + " " + id;
+        ChangeShip();
     }
 }

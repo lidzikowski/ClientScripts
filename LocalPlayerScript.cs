@@ -10,6 +10,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
     private Transform LocalPlayer_BackgroundMap;
     private Transform LocalPlayer_OtherPlayers;
+    private Transform LocalPlayer_OtherEnemies;
 
     private float time = 1;
     private Text Interface_Minimap_Position;
@@ -32,7 +33,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
             // Other player update
             LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().arrayPlayers(jsonData.otherPlayers);
-            
+
+            // Other enemie update
+            LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().arrayEnemies(jsonData.otherEnemies);
         });
     }
 
@@ -43,7 +46,7 @@ public class LocalPlayerScript : MonoBehaviour {
             UpdateInterface();
             time = 0;
         }
-        else if (time > 0.2)
+        else if (time > 0.5f)
         {
             if (Input.GetMouseButton(0) && !EventSystem.current.IsPointerOverGameObject())
                 socket.localPlayer.ClickMouseController(socket);
@@ -52,7 +55,6 @@ public class LocalPlayerScript : MonoBehaviour {
             time += Time.deltaTime;
 
         socket.localPlayer.FlyShip();
-        socket.localPlayer.RotateShip();
         UpdateInterface();
     }
 
@@ -66,8 +68,9 @@ public class LocalPlayerScript : MonoBehaviour {
         LocalPlayer_BackgroundMap = GameObject.Find("Background").transform;
         ChangeMap();
 
-        // Other player start object
+        // Other player and enemies start object
         LocalPlayer_OtherPlayers = GameObject.Find("OtherPlayers").transform;
+        LocalPlayer_OtherEnemies = GameObject.Find("OtherEnemies").transform;
 
         // Interface local player
         Transform userInterface = GameObject.Find("Interface").transform;

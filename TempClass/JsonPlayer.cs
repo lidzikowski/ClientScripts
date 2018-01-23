@@ -5,6 +5,7 @@ public class JsonData
 {
     public JsonLocalPlayer localPlayer { get; set; }
     public List<JsonPlayer> otherPlayers { get; set; }
+    public List<JsonEnemy> otherEnemies { get; set; }
 }
 
 public abstract class Json
@@ -19,8 +20,6 @@ public abstract class Json
     public double new_position_x { get; set; }
     public double new_position_y { get; set; }
     public int speed { get; set; }
-
-    // Target
 }
 
 public class JsonPlayer : Json
@@ -37,4 +36,11 @@ public class JsonLocalPlayer : Json
     public int experience { get; set; }
     public int level { get; set; }
     public int ranking_points { get; set; }
+}
+
+public class JsonEnemy : Json
+{
+    public int id { get; set; }
+    public string enemie_name { get; set; }
+    public string enemie_type { get; set; }
 }

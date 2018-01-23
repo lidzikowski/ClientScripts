@@ -9,7 +9,6 @@ public interface IFly
     GameObject object_model { get; set; }
     GameObject object_ship_model { get; set; }
 
-    void ChangePosition(float x, float y);
     void FlyShip();
     void RotateShip();
 }
