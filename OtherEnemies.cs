@@ -5,7 +5,7 @@ using UnityEngine;
 public class OtherEnemies : MonoBehaviour
 {
     private ClientSocket socket;
-    public Dictionary<int, Enemie> enemies;
+    public Dictionary<int, Parent> enemies;
 
     private GameObject prefab;
 
@@ -15,7 +15,7 @@ public class OtherEnemies : MonoBehaviour
 
         prefab = Resources.Load<GameObject>("Prefabs/ENEMY");
 
-        enemies = new Dictionary<int, Enemie>();
+        enemies = new Dictionary<int, Parent>();
     }
 
     private float timer = 0;
@@ -47,7 +47,7 @@ public class OtherEnemies : MonoBehaviour
     {
         foreach (JsonEnemy en in _enemies) 
         {
-            Enemie enemie;
+            Parent enemie;
             if (enemies.TryGetValue(en.id, out enemie))
                 enemie.synchronize(en);
             else

@@ -1,7 +1,7 @@
 ﻿
 public abstract class Temp
 {
-    public int user_id { get; set; }
+    public int id { get; set; }
     public string username { get; set; }
     public string ship_name { get; set; }
     public int hitpoints { get; set; }

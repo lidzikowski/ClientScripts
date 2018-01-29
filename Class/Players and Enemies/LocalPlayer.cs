@@ -4,7 +4,6 @@ using System;
 public class LocalPlayer : Parent
 {
     #region Identificators
-    public int user_id { get; set; }
     public string username { get; set; }
     #endregion
 
@@ -28,7 +27,7 @@ public class LocalPlayer : Parent
     #region Constructors
     public LocalPlayer(TempLocalPlayer player, ClientSocket _socket) : base(player, _socket)
     {
-        user_id = player.user_id;
+        id = player.id;
         username = player.username;
 
         map_id = player.map_id;
@@ -45,9 +44,9 @@ public class LocalPlayer : Parent
         equip_extras = player.equip_extras;
     }
     #endregion
-    
+
     #region Local player mouse controller
-    public void ClickMouseController(ClientSocket socket)
+    public void ClickMouseController(LocalPlayerScript localPl)
     {
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -56,7 +55,23 @@ public class LocalPlayer : Parent
             if (object_model == hit.transform.gameObject)
                 return;
             else if (hit.transform.tag == "Player" || hit.transform.tag == "Enemy")
-                ;//selectTarget(hit.transform.gameObject);
+            {
+                string[] split = hit.transform.name.Split();
+                Parent target = null;
+
+                switch(split[0])
+                {
+                    case "PLAYER":
+                        localPl.LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().players.TryGetValue(int.Parse(split[1]), out target);
+                        break;
+                    case "ENEMY":
+                        localPl.LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().enemies.TryGetValue(int.Parse(split[1]), out target);
+                        break;
+                }
+
+                if (target != null && target != object_target)
+                    selectTarget(target);
+            }
         }
         else
         {
@@ -67,7 +82,36 @@ public class LocalPlayer : Parent
     }
     #endregion
 
+    #region TargetAndAttack
+    public void selectTarget(Parent parent)
+    {
+        object_target = parent;
+        string json = "{\"method\":\"changeTarget\", \"id\":" + id + ", \"type\":\"" + parent.GetType() + "\",\"target_id\":" + parent.id + ", \"attack\":0}";
+        socket.io.Emit("communication", json);
+    }
+
+    public void attackTarget()
+    {
+        if (object_target == null)
+            return;
+
+        int attackStatus = 1;
+        if (attack)
+        {
+            attackStatus = 0;
+            attack = false;
+        }
+        else
+            attack = true;
+
+        string json = "{\"method\":\"changeTarget\", \"id\":" + id + ", \"type\":\"" + object_target.GetType() + "\",\"target_id\":" + object_target.id + ", \"attack\":" + attackStatus + "}";
+        Debug.Log(json);
+        socket.io.Emit("communication", json);
+    }
+    #endregion
+
     #region ChangePosition (send new position to server)
+    private float timerSynchronize = 0;
     /// <summary>
     /// Set new_position in object and calculate atan to rotate model
     /// </summary>
@@ -77,8 +121,14 @@ public class LocalPlayer : Parent
         y = (float)Math.Round(y, 2);
         new_position = new Vector3(x, y, 0);
 
-        string json = "{\"method\":\"changePosition\", \"user_id\":\"" + user_id + "\", \"x\":" + x + ",\"y\":" + y + "}";
-        socket.io.Emit("communication", json);
+        if (timerSynchronize > 0.1f)
+        {
+            string json = "{\"method\":\"changePosition\", \"id\":\"" + id + "\", \"x\":" + x + ",\"y\":" + y + "}";
+            socket.io.Emit("communication", json);
+            timerSynchronize = 0;
+        }
+        else
+            timerSynchronize += Time.deltaTime;
     }
     #endregion
 }

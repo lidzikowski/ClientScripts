@@ -3,8 +3,15 @@ using UnityEngine;
 
 public abstract class Parent : IFly, IHealth, ITarget
 {
+    #region local reference for update object
     public ClientSocket socket { get; set; }
     public float lastUpdate = 5;
+    #endregion
+
+
+    #region Identificators
+    public int id { get; set; }
+    #endregion
 
     #region Ship
     public string ship_name { get; set; }
@@ -35,6 +42,7 @@ public abstract class Parent : IFly, IHealth, ITarget
     public bool attack { get; set; }
     protected List<Transform> ship_lasers { get; set; }
     #endregion
+
     
     #region Constructors
     public Parent(Temp player, ClientSocket _socket)
@@ -68,6 +76,7 @@ public abstract class Parent : IFly, IHealth, ITarget
         gearsActive = true;
     }
     #endregion
+
 
     #region Change view model ship
     /// <summary>
@@ -110,6 +119,7 @@ public abstract class Parent : IFly, IHealth, ITarget
     /// </summary>
     public virtual void FlyShip()
     {
+        RotateShip();
         if (position != new_position)
         {
             object_model.transform.position = Vector2.MoveTowards(object_model.transform.position, new_position, Time.deltaTime * (speed / 15));
@@ -129,11 +139,13 @@ public abstract class Parent : IFly, IHealth, ITarget
 
         if (gearsUse && !gearsActive)
             changeEngine(true);
-
-        RotateShip();
     }
 
-    private void changeEngine(bool status)
+    /// <summary>
+    /// Change status engine in ship model
+    /// </summary>
+    /// <param name="status"></param>
+    protected void changeEngine(bool status)
     {
         gearsActive = status;
         foreach (GameObject engine in ship_engines)
@@ -145,17 +157,19 @@ public abstract class Parent : IFly, IHealth, ITarget
     /// </summary>
     public virtual void RotateShip()
     {
-        if (position == new_position)
-            return;
-
-        //if (attack && object_target != null)
-        //    atan2 = Mathf.Atan2(object_target.object_model.transform.position.y - position.y, object_target.object_model.transform.position.x - position.x) * Mathf.Rad2Deg + 90;
-        //else
-            atan2 = Mathf.Atan2(new_position.y - position.y, new_position.x - position.x) * Mathf.Rad2Deg + 90;
+        if (attack && object_target != null)
+            atan2 = Mathf.Atan2(object_target.object_model.transform.position.y - position.y, object_target.object_model.transform.position.x - position.x) * Mathf.Rad2Deg + 90;
+        else
+        {
+            float angle = Mathf.Atan2(new_position.y - position.y, new_position.x - position.x);
+            if (angle == 0)
+                return;
+            atan2 = angle * Mathf.Rad2Deg + 90;
+        }
 
         object_ship_model.transform.rotation = Quaternion.Lerp(object_ship_model.transform.rotation, Quaternion.Euler(0, 0, atan2), Time.deltaTime * 10);
     }
-    
+
     protected void setPosition(Vector3 pos)
     {
         object_model.transform.position = Vector3.MoveTowards(object_model.transform.position, pos, Time.deltaTime * (speed / 10));
@@ -163,10 +177,11 @@ public abstract class Parent : IFly, IHealth, ITarget
     }
     #endregion
 
+    #region Synchronize object and creator gameobject models
     /// <summary>
     /// Update object from server data (json to object)
     /// </summary>
-    public virtual void synchronize(Json pl)
+    public virtual void synchronize(Json pl, bool checkPosition = true)
     {
         lastUpdate = 5;
 
@@ -181,10 +196,13 @@ public abstract class Parent : IFly, IHealth, ITarget
         shields = pl.shields;
         shields_max = pl.shields_max;
 
-        Vector3 pos = new Vector3((float)pl.position_x, (float)pl.position_y, 0);
-        if (Vector3.Distance(position, pos) > speed / 50)
-            setPosition(pos);
-        new_position = new Vector3((float)pl.new_position_x, (float)pl.new_position_y, 0);
+        if(checkPosition)
+        {
+            Vector3 pos = new Vector3((float)pl.position_x, (float)pl.position_y, 0);
+            if (Vector3.Distance(position, pos) > speed / 50)
+                setPosition(pos);
+            new_position = new Vector3((float)pl.new_position_x, (float)pl.new_position_y, 0);
+        }
 
         speed = pl.speed;
     }
@@ -195,4 +213,5 @@ public abstract class Parent : IFly, IHealth, ITarget
         object_model.name = type + " " + id;
         ChangeShip();
     }
+    #endregion
 }

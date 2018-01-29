@@ -2,10 +2,12 @@
 
 public class Enemie : Parent
 {
-    public int id { get; set; }
+    #region local variables
     public string enemie_name { get; set; }
     public string enemie_type { get; set; }
+    #endregion
 
+    #region Constructors
     public Enemie(JsonEnemy js, ClientSocket _socket, GameObject prefab, Transform transform)
     {
         socket = _socket;
@@ -32,6 +34,7 @@ public class Enemie : Parent
         object_target = null;
         attack = false;
     }
+    #endregion
 
-    
+
 }

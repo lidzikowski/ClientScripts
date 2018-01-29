@@ -24,7 +24,7 @@ public abstract class Json
 
 public class JsonPlayer : Json
 {
-    public int user_id { get; set; }
+    public int id { get; set; }
     public string username { get; set; }
 }
 

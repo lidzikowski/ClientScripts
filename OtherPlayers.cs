@@ -5,7 +5,7 @@ using UnityEngine;
 public class OtherPlayers : MonoBehaviour {
 
     private ClientSocket socket;
-    public Dictionary<int, Player> players;
+    public Dictionary<int, Parent> players;
 
     private GameObject prefab;
 
@@ -15,7 +15,7 @@ public class OtherPlayers : MonoBehaviour {
 
         prefab = Resources.Load<GameObject>("Prefabs/PLAYER");
 
-        players = new Dictionary<int, Player>();
+        players = new Dictionary<int, Parent>();
     }
 
     private float timer = 0;
@@ -31,7 +31,7 @@ public class OtherPlayers : MonoBehaviour {
                 if (player.lastUpdate < 0 || Vector3.Distance(socket.localPlayer.position, player.position) > 100)
                 {
                     Destroy(player.object_model);
-                    players.Remove(player.user_id);
+                    players.Remove(player.id);
                     return;
                 }
                 else
@@ -47,11 +47,11 @@ public class OtherPlayers : MonoBehaviour {
     {
         foreach (JsonPlayer pl in _players) 
         {
-            Player player;
-            if(players.TryGetValue(pl.user_id, out player))
+            Parent player;
+            if(players.TryGetValue(pl.id, out player))
                 player.synchronize(pl);
             else
-                players.Add(pl.user_id, new Player(pl, socket, prefab, transform));
+                players.Add(pl.id, new Player(pl, socket, prefab, transform));
         }
     }
 }

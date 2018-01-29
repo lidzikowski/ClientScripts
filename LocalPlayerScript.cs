@@ -9,15 +9,16 @@ public class LocalPlayerScript : MonoBehaviour {
     private ClientSocket socket;
 
     private Transform LocalPlayer_BackgroundMap;
-    private Transform LocalPlayer_OtherPlayers;
-    private Transform LocalPlayer_OtherEnemies;
+    public Transform LocalPlayer_OtherPlayers;
+    public Transform LocalPlayer_OtherEnemies;
 
-    private float time = 1;
     private Text Interface_Minimap_Position;
     private Text Interface_User_Scrap;
     private Text Interface_User_Credits;
     private Text Interface_User_Experience;
     private Text Interface_User_Level;
+
+    private float timer = 0.2f;
 
     void Start ()
     {
@@ -29,7 +30,7 @@ public class LocalPlayerScript : MonoBehaviour {
             JsonData jsonData = JsonMapper.ToObject<JsonData>(e.data);
 
             // Local player update
-            socket.localPlayer.synchronize(jsonData.localPlayer);
+            socket.localPlayer.synchronize(jsonData.localPlayer, false);
 
             // Other player update
             LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().arrayPlayers(jsonData.otherPlayers);
@@ -41,21 +42,23 @@ public class LocalPlayerScript : MonoBehaviour {
 
     void Update()
     {
-        if (time > 1)
+        // Update interace
+        if (timer > 1f)
         {
             UpdateInterface();
-            time = 0;
-        }
-        else if (time > 0.5f)
-        {
-            if (Input.GetMouseButton(0) && !EventSystem.current.IsPointerOverGameObject())
-                socket.localPlayer.ClickMouseController(socket);
+            timer = 0;
         }
         else
-            time += Time.deltaTime;
+            timer += Time.deltaTime;
 
+        // Change position function
+        if (Input.GetMouseButton(0) && !EventSystem.current.IsPointerOverGameObject())
+            socket.localPlayer.ClickMouseController(this);
         socket.localPlayer.FlyShip();
-        UpdateInterface();
+
+        // Attack target function
+        if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
+            socket.localPlayer.attackTarget();
     }
 
     private void CreateWorld()
