@@ -39,7 +39,7 @@ public abstract class Parent : IFly, IHealth, ITarget
 
     #region ITarget variable
     public Parent object_target { get; set; }
-    public bool attack { get; set; }
+    public int attack { get; set; }
     protected List<Transform> ship_lasers { get; set; }
     #endregion
 
@@ -63,7 +63,7 @@ public abstract class Parent : IFly, IHealth, ITarget
         new_position = position;
 
         object_target = null;
-        attack = false;
+        attack = 0;
 
         atan2 = 0;
         gearsUse = false;
@@ -157,7 +157,7 @@ public abstract class Parent : IFly, IHealth, ITarget
     /// </summary>
     public virtual void RotateShip()
     {
-        if (attack && object_target != null)
+        if (attack == 1 && object_target != null)
             atan2 = Mathf.Atan2(object_target.object_model.transform.position.y - position.y, object_target.object_model.transform.position.x - position.x) * Mathf.Rad2Deg + 90;
         else
         {
@@ -172,7 +172,7 @@ public abstract class Parent : IFly, IHealth, ITarget
 
     protected void setPosition(Vector3 pos)
     {
-        object_model.transform.position = Vector3.MoveTowards(object_model.transform.position, pos, Time.deltaTime * (speed / 10));
+        object_model.transform.position = Vector3.MoveTowards(object_model.transform.position, pos, Time.deltaTime * 500);
         position = object_model.transform.position;
     }
     #endregion
@@ -199,12 +199,51 @@ public abstract class Parent : IFly, IHealth, ITarget
         if(checkPosition)
         {
             Vector3 pos = new Vector3((float)pl.position_x, (float)pl.position_y, 0);
-            if (Vector3.Distance(position, pos) > speed / 50)
+            if (Vector3.Distance(position, pos) > 10)
                 setPosition(pos);
             new_position = new Vector3((float)pl.new_position_x, (float)pl.new_position_y, 0);
         }
 
         speed = pl.speed;
+    }
+    public virtual void synchronize(Json pl, Dictionary<int, Parent> players, Dictionary<int, Parent> enemies)
+    {
+        synchronize(pl);
+        if (pl.target_type != "" && pl.target_id > 0)
+        switch(pl.target_type)
+        {
+            case "Player":
+                if (pl.target_id == socket.localPlayer.id)
+                {
+                    object_target = socket.localPlayer;
+                    attack = pl.attack;
+                    return;
+                }
+                else
+                {
+                    foreach (Parent parent in players.Values)
+                    {
+                        if (pl.target_id == parent.id)
+                        {
+                            object_target = parent;
+                            attack = pl.attack;
+                            return;
+                        }
+                    }
+                }
+                break;
+            case "Enemie":
+                foreach (Parent parent in enemies.Values)
+                {
+                    if (pl.target_id == parent.id)
+                    {
+                        object_target = parent;
+                        attack = pl.attack;
+                        return;
+                    }
+                }
+                break;
+        }
     }
 
     protected void createGameObject(string type, int id, GameObject prefab, Transform transform)
@@ -212,6 +251,35 @@ public abstract class Parent : IFly, IHealth, ITarget
         object_model = GameObject.Instantiate(prefab, transform);
         object_model.name = type + " " + id;
         ChangeShip();
+    }
+    #endregion
+
+    #region Destroy method
+    protected void DisposeTarget(Dictionary<int, Parent> listEn, Dictionary<int, Parent> listPl)
+    {
+        foreach (Enemie en in listEn.Values)
+        {
+            if (en.object_target == this)
+            {
+                en.object_target = null;
+                en.attack = 0;
+            }
+        }
+        foreach (Player pl in listPl.Values)
+        {
+            if (pl.object_target == this)
+            {
+                pl.object_target = null;
+                pl.attack = 0;
+            }
+        }
+    }
+
+    public virtual void DestroyThis(Dictionary<int ,Parent> listEn, Dictionary<int, Parent> listPl)
+    {
+        DisposeTarget(listEn, listPl);
+        // Spawn effect destroy
+        GameObject.Destroy(object_model);
     }
     #endregion
 }

@@ -35,7 +35,7 @@ public class Player : Parent
         createGameObject("PLAYER", id, prefab, transform);
 
         object_target = null;
-        attack = false;
+        attack = 0;
     }
     #endregion
 

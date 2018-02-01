@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 public class LocalPlayer : Parent
 {
@@ -85,6 +86,7 @@ public class LocalPlayer : Parent
     #region TargetAndAttack
     public void selectTarget(Parent parent)
     {
+        attack = 0;
         object_target = parent;
         string json = "{\"method\":\"changeTarget\", \"id\":" + id + ", \"type\":\"" + parent.GetType() + "\",\"target_id\":" + parent.id + ", \"attack\":0}";
         socket.io.Emit("communication", json);
@@ -96,16 +98,15 @@ public class LocalPlayer : Parent
             return;
 
         int attackStatus = 1;
-        if (attack)
+        if (attack == 1)
         {
             attackStatus = 0;
-            attack = false;
+            attack = 0;
         }
         else
-            attack = true;
+            attack = 1;
 
         string json = "{\"method\":\"changeTarget\", \"id\":" + id + ", \"type\":\"" + object_target.GetType() + "\",\"target_id\":" + object_target.id + ", \"attack\":" + attackStatus + "}";
-        Debug.Log(json);
         socket.io.Emit("communication", json);
     }
     #endregion
@@ -131,4 +132,10 @@ public class LocalPlayer : Parent
             timerSynchronize += Time.deltaTime;
     }
     #endregion
+    
+    public override void DestroyThis(Dictionary<int, Parent> listEn, Dictionary<int, Parent> listPl)
+    {
+        DisposeTarget(listEn, listPl);
+        // Spawn effect destroy
+    }
 }

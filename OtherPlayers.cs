@@ -6,6 +6,7 @@ public class OtherPlayers : MonoBehaviour {
 
     private ClientSocket socket;
     public Dictionary<int, Parent> players;
+    public Dictionary<int, Parent> enemiesReference;
 
     private GameObject prefab;
 
@@ -16,6 +17,7 @@ public class OtherPlayers : MonoBehaviour {
         prefab = Resources.Load<GameObject>("Prefabs/PLAYER");
 
         players = new Dictionary<int, Parent>();
+        enemiesReference = GameObject.Find("OtherEnemies").GetComponent<OtherEnemies>().enemies;
     }
 
     private float timer = 0;
@@ -48,8 +50,8 @@ public class OtherPlayers : MonoBehaviour {
         foreach (JsonPlayer pl in _players) 
         {
             Parent player;
-            if(players.TryGetValue(pl.id, out player))
-                player.synchronize(pl);
+            if (players.TryGetValue(pl.id, out player))
+                player.synchronize(pl, players, enemiesReference);
             else
                 players.Add(pl.id, new Player(pl, socket, prefab, transform));
         }

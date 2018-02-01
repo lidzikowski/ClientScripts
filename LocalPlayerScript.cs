@@ -3,6 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnitySocketIO.Events;
 using LitJson;
+using System.Collections.Generic;
 
 public class LocalPlayerScript : MonoBehaviour {
 
@@ -17,8 +18,6 @@ public class LocalPlayerScript : MonoBehaviour {
     private Text Interface_User_Credits;
     private Text Interface_User_Experience;
     private Text Interface_User_Level;
-
-    private float timer = 0.2f;
 
     void Start ()
     {
@@ -37,19 +36,15 @@ public class LocalPlayerScript : MonoBehaviour {
 
             // Other enemie update
             LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().arrayEnemies(jsonData.otherEnemies);
+
+            if (jsonData.objectDeaths.Count > 0)
+                clearMap(jsonData.objectDeaths);
         });
     }
 
     void Update()
     {
-        // Update interace
-        if (timer > 1f)
-        {
-            UpdateInterface();
-            timer = 0;
-        }
-        else
-            timer += Time.deltaTime;
+        UpdateInterface();
 
         // Change position function
         if (Input.GetMouseButton(0) && !EventSystem.current.IsPointerOverGameObject())
@@ -114,7 +109,7 @@ public class LocalPlayerScript : MonoBehaviour {
     public void ChangeMap()
     {
         foreach (Transform t in LocalPlayer_BackgroundMap)
-            Destroy(t);
+            Destroy(t.gameObject);
         Instantiate(socket.gameResources.maps[socket.localPlayer.map_id], LocalPlayer_BackgroundMap);
     }
 
@@ -127,5 +122,46 @@ public class LocalPlayerScript : MonoBehaviour {
         Interface_User_Credits.text = socket.localPlayer.credits.ToString();
         Interface_User_Experience.text = socket.localPlayer.experience.ToString();
         Interface_User_Level.text = socket.localPlayer.level.ToString();
+    }
+    
+    private void clearMap(List<JsonDeath> list)
+    {
+        foreach (JsonDeath obj in list)
+        {
+            switch (obj.type)
+            {
+                case "Player":
+                    if (obj.id == socket.localPlayer.id)
+                    {
+                        socket.localPlayer.map_id = "map0";
+                        socket.localPlayer.position = new Vector2(50.5f, -50.5f);
+                        socket.localPlayer.object_model.transform.position = socket.localPlayer.position;
+                        socket.localPlayer.new_position = socket.localPlayer.position;
+                        ChangeMap();
+
+                        socket.localPlayer.DestroyThis(LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().enemies, LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().players);
+                        socket.localPlayer.object_target = null;
+                        socket.localPlayer.attack = 0;
+                    }
+                    else
+                    {
+                        Parent player;
+                        if (LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().players.TryGetValue(obj.id, out player))
+                        {
+                            player.DestroyThis(LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().enemies, LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().players);
+                            LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().players.Remove(player.id);
+                        }
+                    }
+                    break;
+                case "Enemie":
+                    Parent enemie;
+                    if (LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().enemies.TryGetValue(obj.id, out enemie))
+                    {
+                        enemie.DestroyThis(LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().enemies, LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().players);
+                        LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().enemies.Remove(enemie.id);
+                    }
+                    break;
+            }
+        }
     }
 }

@@ -32,7 +32,7 @@ public class Enemie : Parent
         createGameObject("ENEMY", js.id, prefab, transform);
 
         object_target = null;
-        attack = false;
+        attack = 0;
     }
     #endregion
 
