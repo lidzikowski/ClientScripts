@@ -37,8 +37,13 @@ public class LocalPlayerScript : MonoBehaviour {
             // Other enemie update
             LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().arrayEnemies(jsonData.otherEnemies);
 
+            // Create deaths
             if (jsonData.objectDeaths.Count > 0)
-                clearMap(jsonData.objectDeaths);
+                createDeaths(jsonData.objectDeaths);
+
+            // Create shots
+            if (jsonData.shots.Count > 0)
+                createShots(jsonData.shots);
         });
     }
 
@@ -124,7 +129,7 @@ public class LocalPlayerScript : MonoBehaviour {
         Interface_User_Level.text = socket.localPlayer.level.ToString();
     }
     
-    private void clearMap(List<JsonDeath> list)
+    private void createDeaths(List<JsonDeath> list)
     {
         foreach (JsonDeath obj in list)
         {
@@ -162,6 +167,14 @@ public class LocalPlayerScript : MonoBehaviour {
                     }
                     break;
             }
+        }
+    }
+
+    private void createShots(List<JsonShot> list)
+    {
+        foreach (JsonShot obj in list)
+        {
+            Debug.Log(obj.attacker_id + " -> " + obj.target_id + "  | " + obj.damage);
         }
     }
 }

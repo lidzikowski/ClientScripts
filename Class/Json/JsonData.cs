@@ -7,4 +7,5 @@ public class JsonData
     public List<JsonPlayer> otherPlayers { get; set; }
     public List<JsonEnemy> otherEnemies { get; set; }
     public List<JsonDeath> objectDeaths { get; set; }
+    public List<JsonShot> shots { get; set; }
 }

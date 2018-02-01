@@ -25,6 +25,10 @@ public class LocalPlayer : Parent
     public string equip_extras { get; set; }
     #endregion
 
+
+    public string ammunition { get; set; }
+
+
     #region Constructors
     public LocalPlayer(TempLocalPlayer player, ClientSocket _socket) : base(player, _socket)
     {
@@ -38,6 +42,8 @@ public class LocalPlayer : Parent
         level = player.level;
         ranking_points = player.ranking_points;
 
+        ammunition = player.ammunition;
+
         equipment = player.equipment;
         equip_lasers = player.equip_lasers;
         equip_shields = player.equip_shields;
@@ -45,6 +51,8 @@ public class LocalPlayer : Parent
         equip_extras = player.equip_extras;
     }
     #endregion
+
+
 
     #region Local player mouse controller
     public void ClickMouseController(LocalPlayerScript localPl)

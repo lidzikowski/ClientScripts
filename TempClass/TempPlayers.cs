@@ -11,12 +11,11 @@ public abstract class Temp
     public int position_x { get; set; }
     public int position_y { get; set; }
     public int speed { get; set; }
-    public int speed_max { get; set; }
+    public string ammunition { get; set; }
 }
 
 public class TempPlayer : Temp
 {
-
 }
 
 public class TempLocalPlayer : Temp
@@ -32,6 +31,4 @@ public class TempLocalPlayer : Temp
     public string equip_shields { get; set; }
     public string equip_engines { get; set; }
     public string equip_extras { get; set; }
-
-
 }

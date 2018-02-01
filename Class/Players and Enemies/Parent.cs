@@ -43,7 +43,6 @@ public abstract class Parent : IFly, IHealth, ITarget
     protected List<Transform> ship_lasers { get; set; }
     #endregion
 
-    
     #region Constructors
     public Parent(Temp player, ClientSocket _socket)
     {
