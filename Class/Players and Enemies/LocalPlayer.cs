@@ -70,11 +70,11 @@ public class LocalPlayer : Parent
 
                 switch(split[0])
                 {
-                    case "PLAYER":
-                        localPl.LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().players.TryGetValue(int.Parse(split[1]), out target);
+                    case "Player":
+                        localPl.otherPlayers.players.TryGetValue(int.Parse(split[1]), out target);
                         break;
-                    case "ENEMY":
-                        localPl.LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().enemies.TryGetValue(int.Parse(split[1]), out target);
+                    case "Enemie":
+                        localPl.otherEnemies.enemies.TryGetValue(int.Parse(split[1]), out target);
                         break;
                 }
 

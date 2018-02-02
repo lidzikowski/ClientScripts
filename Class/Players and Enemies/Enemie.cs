@@ -29,7 +29,7 @@ public class Enemie : Parent
         position = new Vector3((float)js.position_x, (float)js.position_y, 0);
         new_position = new Vector3((float)js.new_position_x, (float)js.new_position_y, 0);
 
-        createGameObject("ENEMY", js.id, prefab, transform);
+        createGameObject(GetType().ToString(), js.id, prefab, transform);
 
         object_target = null;
         attack = 0;

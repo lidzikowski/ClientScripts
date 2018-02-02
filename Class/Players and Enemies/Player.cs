@@ -32,7 +32,7 @@ public class Player : Parent
         position = new Vector3((float)js.position_x, (float)js.position_y, 0);
         new_position = new Vector3((float)js.new_position_x, (float)js.new_position_y, 0);
 
-        createGameObject("PLAYER", id, prefab, transform);
+        createGameObject(GetType().ToString(), id, prefab, transform);
 
         object_target = null;
         attack = 0;

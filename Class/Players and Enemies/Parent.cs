@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Parent : IFly, IHealth, ITarget
+public abstract class Parent
 {
     #region local reference for update object
     public ClientSocket socket { get; set; }

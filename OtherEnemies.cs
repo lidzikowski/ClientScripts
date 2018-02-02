@@ -14,7 +14,7 @@ public class OtherEnemies : MonoBehaviour
     {
         socket = GameObject.FindGameObjectWithTag("SocketIOController").GetComponent<ClientSocket>();
 
-        prefab = Resources.Load<GameObject>("Prefabs/ENEMY");
+        prefab = Resources.Load<GameObject>("Prefabs/Enemie");
 
         enemies = new Dictionary<int, Parent>();
         playersReference = GameObject.Find("OtherPlayers").GetComponent<OtherPlayers>().players;

@@ -10,8 +10,8 @@ public class LocalPlayerScript : MonoBehaviour {
     private ClientSocket socket;
 
     private Transform LocalPlayer_BackgroundMap;
-    public Transform LocalPlayer_OtherPlayers;
-    public Transform LocalPlayer_OtherEnemies;
+    public OtherPlayers otherPlayers;
+    public OtherEnemies otherEnemies;
 
     private Text Interface_Minimap_Position;
     private Text Interface_User_Scrap;
@@ -19,10 +19,15 @@ public class LocalPlayerScript : MonoBehaviour {
     private Text Interface_User_Experience;
     private Text Interface_User_Level;
 
+    private Dictionary<string, GameObject> Lasers;
+
     void Start ()
     {
         socket = GameObject.FindGameObjectWithTag("SocketIOController").GetComponent<ClientSocket>();
-        
+
+        Lasers = new Dictionary<string, GameObject>();
+        Lasers.Add("laser0", Resources.Load<GameObject>("Lasers/laser0"));
+
         CreateWorld();
 
         socket.io.On("synchronizeData", (SocketIOEvent e) => {
@@ -32,10 +37,10 @@ public class LocalPlayerScript : MonoBehaviour {
             socket.localPlayer.synchronize(jsonData.localPlayer, false);
 
             // Other player update
-            LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().arrayPlayers(jsonData.otherPlayers);
+            otherPlayers.arrayPlayers(jsonData.otherPlayers);
 
             // Other enemie update
-            LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().arrayEnemies(jsonData.otherEnemies);
+            otherEnemies.arrayEnemies(jsonData.otherEnemies);
 
             // Create deaths
             if (jsonData.objectDeaths.Count > 0)
@@ -72,8 +77,8 @@ public class LocalPlayerScript : MonoBehaviour {
         ChangeMap();
 
         // Other player and enemies start object
-        LocalPlayer_OtherPlayers = GameObject.Find("OtherPlayers").transform;
-        LocalPlayer_OtherEnemies = GameObject.Find("OtherEnemies").transform;
+        otherPlayers = GameObject.Find("OtherPlayers").GetComponent<OtherPlayers>();
+        otherEnemies = GameObject.Find("OtherEnemies").GetComponent<OtherEnemies>();
 
         // Interface local player
         Transform userInterface = GameObject.Find("Interface").transform;
@@ -144,26 +149,26 @@ public class LocalPlayerScript : MonoBehaviour {
                         socket.localPlayer.new_position = socket.localPlayer.position;
                         ChangeMap();
 
-                        socket.localPlayer.DestroyThis(LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().enemies, LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().players);
+                        socket.localPlayer.DestroyThis(otherEnemies.enemies, otherPlayers.players);
                         socket.localPlayer.object_target = null;
                         socket.localPlayer.attack = 0;
                     }
                     else
                     {
                         Parent player;
-                        if (LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().players.TryGetValue(obj.id, out player))
+                        if (otherPlayers.players.TryGetValue(obj.id, out player))
                         {
-                            player.DestroyThis(LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().enemies, LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().players);
-                            LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().players.Remove(player.id);
+                            player.DestroyThis(otherEnemies.enemies, otherPlayers.players);
+                            otherPlayers.players.Remove(player.id);
                         }
                     }
                     break;
                 case "Enemie":
                     Parent enemie;
-                    if (LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().enemies.TryGetValue(obj.id, out enemie))
+                    if (otherEnemies.enemies.TryGetValue(obj.id, out enemie))
                     {
-                        enemie.DestroyThis(LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().enemies, LocalPlayer_OtherPlayers.GetComponent<OtherPlayers>().players);
-                        LocalPlayer_OtherEnemies.GetComponent<OtherEnemies>().enemies.Remove(enemie.id);
+                        enemie.DestroyThis(otherEnemies.enemies, otherPlayers.players);
+                        otherEnemies.enemies.Remove(enemie.id);
                     }
                     break;
             }
@@ -172,9 +177,42 @@ public class LocalPlayerScript : MonoBehaviour {
 
     private void createShots(List<JsonShot> list)
     {
+        Parent attacker;
+        Parent target;
         foreach (JsonShot obj in list)
         {
-            Debug.Log(obj.attacker_id + " -> " + obj.target_id + "  | " + obj.damage);
+            attacker = null;
+            switch (obj.attacker_type)
+            {
+                case "Player": // Player
+                    if (socket.localPlayer.id == obj.attacker_id)
+                        attacker = socket.localPlayer;
+                    else
+                        otherPlayers.players.TryGetValue(obj.attacker_id, out attacker);
+                    break;
+                case "Enemie": // Enemie
+                    otherEnemies.enemies.TryGetValue(obj.attacker_id, out attacker);
+                    break;
+            }
+
+            target = null;
+            switch (obj.target_type)
+            {
+                case "Player": // in Player
+                    if (socket.localPlayer.id == obj.target_id)
+                        target = socket.localPlayer;
+                    else
+                        otherPlayers.players.TryGetValue(obj.target_id, out target);
+                    break;
+                case "Enemie": // in Enemie
+                    otherEnemies.enemies.TryGetValue(obj.target_id, out target);
+                    break;
+            }
+
+            if (attacker != null && target != null)
+            {
+                // spawn object ammunition
+            }
         }
     }
 }
