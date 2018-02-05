@@ -36,5 +36,10 @@ public class Enemie : Parent
     }
     #endregion
 
+    public override void ChangeShip()
+    {
+        base.ChangeShip();
 
+        gameObject_selector.transform.GetChild(2).GetComponent<TextMesh>().text = string.Format("{0} {1}", enemie_type, enemie_name);
+    }
 }

@@ -9,9 +9,12 @@ public class LocalPlayerScript : MonoBehaviour {
 
     private ClientSocket socket;
 
-    private Transform LocalPlayer_BackgroundMap;
+
+    private Transform backgroundMap;
     public OtherPlayers otherPlayers;
     public OtherEnemies otherEnemies;
+    public Shots shots;
+
 
     private Text Interface_Minimap_Position;
     private Text Interface_User_Scrap;
@@ -19,14 +22,10 @@ public class LocalPlayerScript : MonoBehaviour {
     private Text Interface_User_Experience;
     private Text Interface_User_Level;
 
-    private Dictionary<string, GameObject> Lasers;
-
     void Start ()
     {
         socket = GameObject.FindGameObjectWithTag("SocketIOController").GetComponent<ClientSocket>();
-
-        Lasers = new Dictionary<string, GameObject>();
-        Lasers.Add("laser0", Resources.Load<GameObject>("Lasers/laser0"));
+        shots = GameObject.Find("Shots").GetComponent<Shots>();
 
         CreateWorld();
 
@@ -48,7 +47,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
             // Create shots
             if (jsonData.shots.Count > 0)
-                createShots(jsonData.shots);
+                shots.createShots(jsonData.shots);
         });
     }
 
@@ -64,6 +63,9 @@ public class LocalPlayerScript : MonoBehaviour {
         // Attack target function
         if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
             socket.localPlayer.attackTarget();
+
+        if (socket.localPlayer.object_target != null)
+            socket.localPlayer.object_target.update_Health_And_Shield_Bar();
     }
 
     private void CreateWorld()
@@ -73,7 +75,7 @@ public class LocalPlayerScript : MonoBehaviour {
         socket.localPlayer.ChangeShip();
 
         // Change background
-        LocalPlayer_BackgroundMap = GameObject.Find("Background").transform;
+        backgroundMap = GameObject.Find("Background").transform;
         ChangeMap();
 
         // Other player and enemies start object
@@ -118,9 +120,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
     public void ChangeMap()
     {
-        foreach (Transform t in LocalPlayer_BackgroundMap)
+        foreach (Transform t in backgroundMap)
             Destroy(t.gameObject);
-        Instantiate(socket.gameResources.maps[socket.localPlayer.map_id], LocalPlayer_BackgroundMap);
+        Instantiate(socket.gameResources.maps[socket.localPlayer.map_id], backgroundMap);
     }
 
     public void UpdateInterface()
@@ -132,6 +134,8 @@ public class LocalPlayerScript : MonoBehaviour {
         Interface_User_Credits.text = socket.localPlayer.credits.ToString();
         Interface_User_Experience.text = socket.localPlayer.experience.ToString();
         Interface_User_Level.text = socket.localPlayer.level.ToString();
+
+        socket.localPlayer.update_Health_And_Shield_Bar();
     }
     
     private void createDeaths(List<JsonDeath> list)
@@ -149,7 +153,7 @@ public class LocalPlayerScript : MonoBehaviour {
                         socket.localPlayer.new_position = socket.localPlayer.position;
                         ChangeMap();
 
-                        socket.localPlayer.DestroyThis(otherEnemies.enemies, otherPlayers.players);
+                        socket.localPlayer.DestroyThis(otherEnemies.enemies, otherPlayers.players, socket.localPlayer);
                         socket.localPlayer.object_target = null;
                         socket.localPlayer.attack = 0;
                     }
@@ -158,7 +162,7 @@ public class LocalPlayerScript : MonoBehaviour {
                         Parent player;
                         if (otherPlayers.players.TryGetValue(obj.id, out player))
                         {
-                            player.DestroyThis(otherEnemies.enemies, otherPlayers.players);
+                            player.DestroyThis(otherEnemies.enemies, otherPlayers.players, socket.localPlayer);
                             otherPlayers.players.Remove(player.id);
                         }
                     }
@@ -167,51 +171,10 @@ public class LocalPlayerScript : MonoBehaviour {
                     Parent enemie;
                     if (otherEnemies.enemies.TryGetValue(obj.id, out enemie))
                     {
-                        enemie.DestroyThis(otherEnemies.enemies, otherPlayers.players);
+                        enemie.DestroyThis(otherEnemies.enemies, otherPlayers.players, socket.localPlayer);
                         otherEnemies.enemies.Remove(enemie.id);
                     }
                     break;
-            }
-        }
-    }
-
-    private void createShots(List<JsonShot> list)
-    {
-        Parent attacker;
-        Parent target;
-        foreach (JsonShot obj in list)
-        {
-            attacker = null;
-            switch (obj.attacker_type)
-            {
-                case "Player": // Player
-                    if (socket.localPlayer.id == obj.attacker_id)
-                        attacker = socket.localPlayer;
-                    else
-                        otherPlayers.players.TryGetValue(obj.attacker_id, out attacker);
-                    break;
-                case "Enemie": // Enemie
-                    otherEnemies.enemies.TryGetValue(obj.attacker_id, out attacker);
-                    break;
-            }
-
-            target = null;
-            switch (obj.target_type)
-            {
-                case "Player": // in Player
-                    if (socket.localPlayer.id == obj.target_id)
-                        target = socket.localPlayer;
-                    else
-                        otherPlayers.players.TryGetValue(obj.target_id, out target);
-                    break;
-                case "Enemie": // in Enemie
-                    otherEnemies.enemies.TryGetValue(obj.target_id, out target);
-                    break;
-            }
-
-            if (attacker != null && target != null)
-            {
-                // spawn object ammunition
             }
         }
     }

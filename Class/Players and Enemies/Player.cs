@@ -50,4 +50,11 @@ public class Player : Parent
         new_position = new Vector3(x, y, 0);
     }
     #endregion
+
+    public override void ChangeShip()
+    {
+        base.ChangeShip();
+
+        gameObject_selector.transform.GetChild(2).GetComponent<TextMesh>().text = username;
+    }
 }

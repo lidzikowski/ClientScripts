@@ -1,5 +1,5 @@
 ﻿
-public abstract class Language
+public abstract class LanguageMenu
 {
     public string FORUM = "Forum";
     public string HELP = "Help";
@@ -33,9 +33,9 @@ public abstract class Language
 
 }
 
-public class English : Language { }
+public class English : LanguageMenu { }
 
-public class Polish : Language
+public class Polish : LanguageMenu
 {
     public Polish()
     {

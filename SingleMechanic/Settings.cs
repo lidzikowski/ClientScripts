@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class Settings : MonoBehaviour {
 
-    public Language LANG;
+    public LanguageMenu LANG;
 
     public void Start()
     {

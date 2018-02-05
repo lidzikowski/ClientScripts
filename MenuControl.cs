@@ -6,7 +6,7 @@ using LitJson;
 public class MenuControl : MonoBehaviour {
 
     private ClientSocket socket;
-    private Language LANG;
+    private LanguageMenu LANG;
     private GameObject infoMessage;
 
     private float timer = 0.5f;

@@ -40,8 +40,15 @@ public abstract class Parent
     #region ITarget variable
     public Parent object_target { get; set; }
     public int attack { get; set; }
-    protected List<Transform> ship_lasers { get; set; }
+    public List<Transform> ship_lasers { get; set; }
+
+    public GameObject gameObject_selector { get; set; }
+    public Transform transform_hitpoints { get; set; }
+    public Transform transform_shields { get; set; }
     #endregion
+
+
+
 
     #region Constructors
     public Parent(Temp player, ClientSocket _socket)
@@ -77,11 +84,44 @@ public abstract class Parent
     #endregion
 
 
+    public void enable_Bars(bool status, Sprite sprite)
+    {
+        transform_hitpoints.gameObject.SetActive(status);
+        transform_shields.gameObject.SetActive(status);
+
+        gameObject_selector.GetComponent<SpriteRenderer>().sprite = sprite;
+        gameObject_selector.GetComponent<SpriteRenderer>().color = Color.grey;
+    }
+
+    public void update_Health_And_Shield_Bar()
+    {
+        if (hitpoints_max > 0)
+        {
+            float x = ((float)hitpoints / (float)hitpoints_max) * 128;
+            if (x > 128)
+                x = 128;
+            transform_hitpoints.localScale = new Vector3(x, 4, 1);
+        }
+        else
+            transform_hitpoints.localScale = new Vector3(0, 4, 1);
+
+        if (shields_max > 0)
+        {
+            float x = ((float)hitpoints / (float)hitpoints_max) * 128;
+            if (x > 128)
+                x = 128;
+            transform_shields.localScale = new Vector3(x, 4, 1);
+        }
+        else
+            transform_shields.localScale = new Vector3(0, 4, 1);
+    }
+
+
     #region Change view model ship
     /// <summary>
     /// Select engines, lasers object and set start position GameObject in Unity
     /// </summary>
-    public void ChangeShip()
+    public virtual void ChangeShip()
     {
         // Check gameobject
         if (object_model == null)
@@ -109,6 +149,11 @@ public abstract class Parent
         {
             ship_lasers.Add(laser);
         }
+
+        // Select statistics
+        gameObject_selector = object_model.transform.GetChild(1).gameObject;
+        transform_shields = gameObject_selector.transform.GetChild(0);
+        transform_hitpoints = gameObject_selector.transform.GetChild(1);
     }
     #endregion
 
@@ -254,29 +299,37 @@ public abstract class Parent
     #endregion
 
     #region Destroy method
-    protected void DisposeTarget(Dictionary<int, Parent> listEn, Dictionary<int, Parent> listPl)
+    protected void DisposeTarget(Dictionary<int, Parent> listEn, Dictionary<int, Parent> listPl, Parent local)
     {
-        foreach (Enemie en in listEn.Values)
+        if (local.object_target == this)
         {
-            if (en.object_target == this)
-            {
-                en.object_target = null;
-                en.attack = 0;
-            }
+            local.object_target = null;
+            local.attack = 0;
         }
-        foreach (Player pl in listPl.Values)
+        else
         {
-            if (pl.object_target == this)
+            foreach (Enemie en in listEn.Values)
             {
-                pl.object_target = null;
-                pl.attack = 0;
+                if (en.object_target == this)
+                {
+                    en.object_target = null;
+                    en.attack = 0;
+                }
+            }
+            foreach (Player pl in listPl.Values)
+            {
+                if (pl.object_target == this)
+                {
+                    pl.object_target = null;
+                    pl.attack = 0;
+                }
             }
         }
     }
 
-    public virtual void DestroyThis(Dictionary<int ,Parent> listEn, Dictionary<int, Parent> listPl)
+    public virtual void DestroyThis(Dictionary<int ,Parent> listEn, Dictionary<int, Parent> listPl, Parent local)
     {
-        DisposeTarget(listEn, listPl);
+        DisposeTarget(listEn, listPl, local);
         // Spawn effect destroy
         GameObject.Destroy(object_model);
     }

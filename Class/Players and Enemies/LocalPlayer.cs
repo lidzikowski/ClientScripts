@@ -28,6 +28,8 @@ public class LocalPlayer : Parent
 
     public string ammunition { get; set; }
 
+    private Sprite target_selected { get; set; }
+    private Sprite target_no_selected { get; set; }
 
     #region Constructors
     public LocalPlayer(TempLocalPlayer player, ClientSocket _socket) : base(player, _socket)
@@ -49,9 +51,12 @@ public class LocalPlayer : Parent
         equip_shields = player.equip_shields;
         equip_engines = player.equip_engines;
         equip_extras = player.equip_extras;
+
+        target_selected = Resources.Load<Sprite>("Targets/selected");
+        target_no_selected = Resources.Load<Sprite>("Targets/no_selected");
     }
     #endregion
-
+    
 
 
     #region Local player mouse controller
@@ -94,9 +99,16 @@ public class LocalPlayer : Parent
     #region TargetAndAttack
     public void selectTarget(Parent parent)
     {
+        if (object_target != null)
+        {
+            object_target.enable_Bars(false, target_no_selected);
+        }
+        parent.enable_Bars(true, target_selected);
+
         attack = 0;
         object_target = parent;
-        string json = "{\"method\":\"changeTarget\", \"id\":" + id + ", \"type\":\"" + parent.GetType() + "\",\"target_id\":" + parent.id + ", \"attack\":0}";
+
+        string json = "{\"method\":\"changeTarget\", \"id\":" + id + ", \"type\":\"" + object_target.GetType() + "\",\"target_id\":" + object_target.id + ", \"attack\":0}";
         socket.io.Emit("communication", json);
     }
 
@@ -105,16 +117,18 @@ public class LocalPlayer : Parent
         if (object_target == null)
             return;
 
-        int attackStatus = 1;
         if (attack == 1)
         {
-            attackStatus = 0;
             attack = 0;
+            object_target.gameObject_selector.GetComponent<SpriteRenderer>().color = Color.grey;
         }
         else
+        {
             attack = 1;
+            object_target.gameObject_selector.GetComponent<SpriteRenderer>().color = Color.red;
+        }
 
-        string json = "{\"method\":\"changeTarget\", \"id\":" + id + ", \"type\":\"" + object_target.GetType() + "\",\"target_id\":" + object_target.id + ", \"attack\":" + attackStatus + "}";
+        string json = "{\"method\":\"changeTarget\", \"id\":" + id + ", \"type\":\"" + object_target.GetType() + "\",\"target_id\":" + object_target.id + ", \"attack\":" + attack + "}";
         socket.io.Emit("communication", json);
     }
     #endregion
@@ -141,9 +155,16 @@ public class LocalPlayer : Parent
     }
     #endregion
     
-    public override void DestroyThis(Dictionary<int, Parent> listEn, Dictionary<int, Parent> listPl)
+    public override void DestroyThis(Dictionary<int, Parent> listEn, Dictionary<int, Parent> listPl, Parent local)
     {
-        DisposeTarget(listEn, listPl);
+        DisposeTarget(listEn, listPl, local);
         // Spawn effect destroy
+    }
+
+    public override void ChangeShip()
+    {
+        base.ChangeShip();
+
+        gameObject_selector.transform.GetChild(2).GetComponent<TextMesh>().text = username;
     }
 }

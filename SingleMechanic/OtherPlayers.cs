@@ -30,7 +30,7 @@ public class OtherPlayers : MonoBehaviour {
             player.FlyShip();
             if (thisTime)
             {
-                if (player.lastUpdate < 0 || Vector3.Distance(socket.localPlayer.position, player.position) > 100)
+                if ((player.lastUpdate < 0 || Vector3.Distance(socket.localPlayer.position, player.position) > 100) && socket.localPlayer.object_target != player)
                 {
                     Destroy(player.object_model);
                     players.Remove(player.id);

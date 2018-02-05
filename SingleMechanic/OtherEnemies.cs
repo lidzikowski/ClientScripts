@@ -30,7 +30,7 @@ public class OtherEnemies : MonoBehaviour
             enemie.FlyShip();
             if (thisTime)
             {
-                if (enemie.lastUpdate < 0 || Vector3.Distance(socket.localPlayer.position, enemie.position) > 100)
+                if ((enemie.lastUpdate < 0 || Vector3.Distance(socket.localPlayer.position, enemie.position) > 100) && socket.localPlayer.object_target != enemie)
                 {
                     Destroy(enemie.object_model);
                     enemies.Remove(enemie.id);
