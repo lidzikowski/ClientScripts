@@ -22,6 +22,9 @@ public class LocalPlayerScript : MonoBehaviour {
     private Text Interface_User_Experience;
     private Text Interface_User_Level;
 
+    private GameObject logObject;
+    private Transform Interface_Logs;
+
     void Start ()
     {
         socket = GameObject.FindGameObjectWithTag("SocketIOController").GetComponent<ClientSocket>();
@@ -48,6 +51,14 @@ public class LocalPlayerScript : MonoBehaviour {
             // Create shots
             if (jsonData.shots.Count > 0)
                 shots.createShots(jsonData.shots);
+
+            // Reward for enemie
+            if (jsonData.rewardsEnemie.Count > 0)
+                createLogMessages(jsonData.rewardsEnemie);
+
+            // Reward for box
+            if (jsonData.rewardsBox.Count > 0)
+                createLogMessages(jsonData.rewardsBox);
         });
     }
 
@@ -114,6 +125,10 @@ public class LocalPlayerScript : MonoBehaviour {
                                 }
                             }
                     break;
+                case "logs":
+                    logObject = Resources.Load<GameObject>("Prefabs/messageLog");
+                    Interface_Logs = transform;
+                    break;
             }
         }
     }
@@ -176,6 +191,42 @@ public class LocalPlayerScript : MonoBehaviour {
                     }
                     break;
             }
+        }
+    }
+
+    private void createLogMessages(List<JsonRewardEnemie> rewards)
+    {
+        foreach(JsonRewardEnemie reward in rewards)
+        {
+            GameObject message = Instantiate(logObject, Interface_Logs);
+            message.GetComponent<Text>().text = "Pokonano " + reward.enemie_type + " " + reward.enemie_name;
+            if(reward.reward.experience > 0)
+                message.GetComponent<Text>().text += "\nOtrzymano " + reward.reward.experience + " experience";
+            if (reward.reward.ranking_points > 0)
+                message.GetComponent<Text>().text += "\nOtrzymano " + reward.reward.ranking_points + " ranking_points";
+            if (reward.reward.credits > 0)
+                message.GetComponent<Text>().text += "\nOtrzymano " + reward.reward.credits + " credits";
+            if (reward.reward.scrap > 0)
+                message.GetComponent<Text>().text += "\nOtrzymano " + reward.reward.scrap + " scrap";
+
+            if (reward.reward.items != null)
+                message.GetComponent<Text>().text += "\nOtrzymano " + reward.reward.items;
+        }
+    }
+    private void createLogMessages(List<JsonRewardBox> rewards)
+    {
+        foreach (JsonRewardBox reward in rewards)
+        {
+            GameObject message = Instantiate(logObject, Interface_Logs);
+            if (reward.reward.experience > 0)
+                message.GetComponent<Text>().text += "\nOtrzymano " + reward.reward.experience + " experience";
+            if (reward.reward.credits > 0)
+                message.GetComponent<Text>().text += "\nOtrzymano " + reward.reward.credits + " credits";
+            if (reward.reward.scrap > 0)
+                message.GetComponent<Text>().text += "\nOtrzymano " + reward.reward.scrap + " scrap";
+
+            if (reward.reward.items != null)
+                message.GetComponent<Text>().text += "\nOtrzymano " + reward.reward.items;
         }
     }
 }

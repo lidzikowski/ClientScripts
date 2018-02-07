@@ -154,7 +154,21 @@ public class LocalPlayer : Parent
             timerSynchronize += Time.deltaTime;
     }
     #endregion
-    
+
+    public override void synchronize(Json pl, bool checkPosition = true)
+    {
+        base.synchronize(pl, checkPosition);
+
+        JsonLocalPlayer lpl = pl as JsonLocalPlayer;
+        map_id = lpl.map_id;
+        scrap = lpl.scrap;
+        credits = lpl.credits;
+        experience = lpl.experience;
+        level = lpl.level;
+        ranking_points = lpl.ranking_points;
+        ammunition = lpl.ammunition;
+    }
+
     public override void DestroyThis(Dictionary<int, Parent> listEn, Dictionary<int, Parent> listPl, Parent local)
     {
         DisposeTarget(listEn, listPl, local);

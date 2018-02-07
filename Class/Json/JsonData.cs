@@ -8,4 +8,6 @@ public class JsonData
     public List<JsonEnemy> otherEnemies { get; set; }
     public List<JsonDeath> objectDeaths { get; set; }
     public List<JsonShot> shots { get; set; }
+    public List<JsonRewardEnemie> rewardsEnemie { get; set; }
+    public List<JsonRewardBox> rewardsBox { get; set; }
 }
