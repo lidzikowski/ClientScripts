@@ -65,7 +65,7 @@ public abstract class Parent
 
         speed = player.speed;
 
-        position = new Vector3(player.position_x / 100, player.position_y / 100, 0);
+        position = new Vector3((float)player.position_x, (float)player.position_y, 0);
         new_position = position;
 
         object_target = null;

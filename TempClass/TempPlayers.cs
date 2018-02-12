@@ -8,8 +8,8 @@ public abstract class Temp
     public int hitpoints_max { get; set; }
     public int shields { get; set; }
     public int shields_max { get; set; }
-    public int position_x { get; set; }
-    public int position_y { get; set; }
+    public double position_x { get; set; }
+    public double position_y { get; set; }
     public int speed { get; set; }
     public string ammunition { get; set; }
 }
@@ -21,8 +21,8 @@ public class TempPlayer : Temp
 public class TempLocalPlayer : Temp
 {
     public string map_id { get; set; }
-    public int scrap { get; set; }
-    public int credits { get; set; }
+    public double scrap { get; set; }
+    public double credits { get; set; }
     public int experience { get; set; }
     public int level { get; set; }
     public int ranking_points { get; set; }

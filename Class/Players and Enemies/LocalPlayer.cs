@@ -10,8 +10,8 @@ public class LocalPlayer : Parent
 
     #region Local parameters
     public string map_id { get; set; }
-    public int scrap { get; set; }
-    public int credits { get; set; }
+    public double scrap { get; set; }
+    public double credits { get; set; }
     public int experience { get; set; }
     public int level { get; set; }
     public int ranking_points { get; set; }
