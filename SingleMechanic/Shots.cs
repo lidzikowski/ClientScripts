@@ -12,6 +12,9 @@ public class Shots : MonoBehaviour {
     private GameObject damageMessage;
     private Dictionary<string, GameObject> Lasers;
 
+    private OtherEnemies enemiesReference;
+    private OtherPlayers playersReference;
+
     void Start ()
     {
         socket = GameObject.FindGameObjectWithTag("SocketIOController").GetComponent<ClientSocket>();
@@ -23,6 +26,10 @@ public class Shots : MonoBehaviour {
 
         Lasers = new Dictionary<string, GameObject>();
         Lasers.Add("laser0", Resources.Load<GameObject>("Lasers/laser0"));
+
+
+        enemiesReference = GameObject.Find("OtherEnemies").GetComponent<OtherEnemies>();
+        playersReference = GameObject.Find("OtherPlayers").GetComponent<OtherPlayers>();
     }
 
     void Update()
@@ -36,8 +43,27 @@ public class Shots : MonoBehaviour {
             else
             {
                 shot.createDamageMessage(damageMessage, transform);
+
+                foreach (Parent parent in enemiesReference.enemies.Values)
+                {
+                    if (shot.attacker == parent)
+                    {
+                        parent.object_target = null;
+                        parent.attack = 0;
+                    }
+                }
+                foreach (Parent parent in playersReference.players.Values)
+                {
+                    if (shot.attacker == parent)
+                    {
+                        parent.object_target = null;
+                        parent.attack = 0;
+                    }
+                }
+
                 foreach (GameObject go in shot.models)
                     GameObject.Destroy(go);
+
                 shots.Remove(shot);
                 return;
             }

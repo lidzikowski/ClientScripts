@@ -6,7 +6,7 @@ public class OtherEnemies : MonoBehaviour
 {
     private ClientSocket socket;
     public Dictionary<int, Parent> enemies;
-    public Dictionary<int, Parent> playersReference;
+    public OtherPlayers playersReference;
 
     private GameObject prefab;
 
@@ -17,7 +17,7 @@ public class OtherEnemies : MonoBehaviour
         prefab = Resources.Load<GameObject>("Prefabs/Enemie");
 
         enemies = new Dictionary<int, Parent>();
-        playersReference = GameObject.Find("OtherPlayers").GetComponent<OtherPlayers>().players;
+        playersReference = GameObject.Find("OtherPlayers").GetComponent<OtherPlayers>();
     }
 
     private float timer = 0;
@@ -51,7 +51,7 @@ public class OtherEnemies : MonoBehaviour
         {
             Parent enemie;
             if (enemies.TryGetValue(en.id, out enemie))
-                enemie.synchronize(en, playersReference, enemies);
+                enemie.synchronize(en, playersReference.players, enemies);
             else
                 enemies.Add(en.id, new Enemie(en, socket, prefab, transform));
         }

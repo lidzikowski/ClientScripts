@@ -37,7 +37,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
             // Local player update
             socket.localPlayer.synchronize(jsonData.localPlayer, false);
-
+            
             // Other player update
             otherPlayers.arrayPlayers(jsonData.otherPlayers);
 
@@ -75,6 +75,7 @@ public class LocalPlayerScript : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
             socket.localPlayer.attackTarget();
 
+        // Update object in target local player
         if (socket.localPlayer.object_target != null)
             socket.localPlayer.object_target.update_Health_And_Shield_Bar();
     }

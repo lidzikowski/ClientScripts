@@ -201,8 +201,10 @@ public abstract class Parent
     /// </summary>
     public virtual void RotateShip()
     {
-        if (attack == 1 && object_target != null)
+        if (attack == 1 && object_target != null && object_target.object_model != null)
+        {
             atan2 = Mathf.Atan2(object_target.object_model.transform.position.y - position.y, object_target.object_model.transform.position.x - position.x) * Mathf.Rad2Deg + 90;
+        }
         else
         {
             float angle = Mathf.Atan2(new_position.y - position.y, new_position.x - position.x);
@@ -254,18 +256,30 @@ public abstract class Parent
     {
         synchronize(pl);
         if (pl.target_type != "" && pl.target_id > 0)
-        switch(pl.target_type)
-        {
-            case "Player":
-                if (pl.target_id == socket.localPlayer.id)
-                {
-                    object_target = socket.localPlayer;
-                    attack = pl.attack;
-                    return;
-                }
-                else
-                {
-                    foreach (Parent parent in players.Values)
+            switch (pl.target_type)
+            {
+                case "Player":
+                    if (pl.target_id == socket.localPlayer.id)
+                    {
+                        object_target = socket.localPlayer;
+                        attack = pl.attack;
+                        return;
+                    }
+                    else
+                    {
+                        foreach (Parent parent in players.Values)
+                        {
+                            if (pl.target_id == parent.id)
+                            {
+                                object_target = parent;
+                                attack = pl.attack;
+                                return;
+                            }
+                        }
+                    }
+                    break;
+                case "Enemie":
+                    foreach (Parent parent in enemies.Values)
                     {
                         if (pl.target_id == parent.id)
                         {
@@ -274,20 +288,8 @@ public abstract class Parent
                             return;
                         }
                     }
-                }
-                break;
-            case "Enemie":
-                foreach (Parent parent in enemies.Values)
-                {
-                    if (pl.target_id == parent.id)
-                    {
-                        object_target = parent;
-                        attack = pl.attack;
-                        return;
-                    }
-                }
-                break;
-        }
+                    break;
+            }
     }
 
     protected void createGameObject(string type, int id, GameObject prefab, Transform transform)
