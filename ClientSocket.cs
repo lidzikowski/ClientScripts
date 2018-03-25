@@ -8,10 +8,9 @@ public class ClientSocket : MonoBehaviour {
     public SocketIOController io;
     public bool socket_connected = false;
 
-    public GameResources gameResources;
-    public GameData gameData;
-
-    public LocalPlayer localPlayer;
+    public Game_Resources game_resources;
+    public Game_Data game_data;
+    public Player_Local player_local;
 
     void Awake() {
         DontDestroyOnLoad(gameObject);
@@ -31,5 +30,10 @@ public class ClientSocket : MonoBehaviour {
     public void changeScene(string scene)
     {
         UnityEngine.SceneManagement.SceneManager.LoadScene(scene);
+    }
+
+    public static ClientSocket Socket()
+    {
+        return GameObject.FindGameObjectWithTag("SocketIOController").GetComponent<ClientSocket>();
     }
 }

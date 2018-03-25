@@ -6,7 +6,7 @@ using LitJson;
 public class MenuControl : MonoBehaviour {
 
     private ClientSocket socket;
-    private LanguageMenu LANG;
+    private Language_Menu LANG;
     private GameObject infoMessage;
 
     private float timer = 0.5f;
@@ -15,30 +15,21 @@ public class MenuControl : MonoBehaviour {
     private Button buttonRegister;
 
     void Start () {
-        socket = GameObject.FindGameObjectWithTag("SocketIOController").GetComponent<ClientSocket>();
+        socket = ClientSocket.Socket();
         infoMessage = Resources.Load<GameObject>("Prefabs/infoMessage");
 
         serverStatus = GameObject.Find("serverStatus").GetComponent<Text>();
         buttonSignIn = GameObject.Find("button_signin").GetComponent<Button>();
         buttonRegister = GameObject.Find("button_register").GetComponent<Button>();
 
-        socket.io.On("buildGame", (SocketIOEvent e) => {
+        socket.io.On("build_game", (SocketIOEvent e) => {
             ServerData serverData = JsonMapper.ToObject<ServerData>(e.data);
 
-            socket.gameResources = new GameResources();
-            socket.gameData = new GameData();
+            socket.game_resources = new Game_Resources();
+            socket.game_data = new Game_Data(socket.game_resources, serverData);
 
-            foreach (Item item in serverData.items)
-                socket.gameData.items.Add(item.item_id, item);
-            foreach (Map map in serverData.maps)
-                socket.gameData.maps.Add(map.map_id, map);
-            foreach (PlayerShip ship in serverData.playerShips)
-                socket.gameData.playerShips.Add(ship.ship_name, ship);
-            foreach (EnemieShip ship in serverData.enemieShips)
-                socket.gameData.enemieShips.Add(ship.ship_name, ship);
-
-            socket.localPlayer = new LocalPlayer(serverData.playerData, socket);
-            if(socket.localPlayer != null)
+            socket.player_local = new Player_Local(serverData.player_data, socket.game_data);
+            if (socket.player_local != null)
                 socket.changeScene("game");
         });
 
